@@ -1,0 +1,14 @@
+[package]
+name = "supervisely-format"
+version = "0.1.0"
+edition = "2021"
+
+license-file = "LICENSE.en.txt"
+description = "A rust library with structs defined for supervisely objects"
+
+[dependencies]
+hex_color = "1.0.0"
+noisy_float = { version = "0.2.0", features = ["serde"] }
+palette = "0.6.1"
+serde = { version = "1.0.140", features = ["derive"] }
+serde_bytes = "0.11.6"
