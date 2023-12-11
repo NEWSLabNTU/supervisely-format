@@ -1,2 +1,3 @@
 # supervisely-format
-A rust library with structs defined for supervisely objects.
+
+A Rust library providing serializable Supervisely data types.
