@@ -29,7 +29,7 @@ pub struct VideoAnnotation {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PointCloudAnnotation {
     pub description: String,
-    pub key: String,
+    pub key: Option<String>,
     pub tags: Vec<Tag>,
     pub objects: Vec<PointCloudObject>,
     pub figures: Vec<PointCloudFigure>,
