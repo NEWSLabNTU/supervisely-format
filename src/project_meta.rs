@@ -44,7 +44,7 @@ impl TagMeta {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum Shape {
     #[serde(rename = "rectangle")]
     Rectangle,
@@ -57,13 +57,8 @@ pub enum Shape {
     #[serde(rename = "bitmap")]
     Bitmap,
     #[serde(rename = "cuboid_3d")]
+    #[default]
     Cuboid3D,
-}
-
-impl Default for Shape {
-    fn default() -> Shape {
-        Shape::Cuboid3D
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
