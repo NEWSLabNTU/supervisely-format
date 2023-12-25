@@ -33,6 +33,7 @@ impl Tag {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum TagValue {
     Number(isize),
     Text(String),

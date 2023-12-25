@@ -34,6 +34,14 @@ pub struct TagMeta {
 }
 
 impl TagMeta {
+    pub fn new_any_number(name:String) -> Self {
+        Self {
+            name,
+            color: None,
+            value_type: ValueType::AnyNumber,
+            values: None,
+        }
+    }
     pub fn new_any_string(name: String) -> Self {
         Self {
             name,
