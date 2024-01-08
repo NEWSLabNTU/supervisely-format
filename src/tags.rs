@@ -26,8 +26,8 @@ impl Tag {
             id: None,
             tag_id: None,
             labeler_login: None,
-            created_at: None,
-            updated_at: None,
+            created_at: Some("2024-01-01T00:00:00.000Z".to_string()),
+            updated_at: Some("2024-01-01T00:00:00.000Z".to_string()),
         }
     }
 }
