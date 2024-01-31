@@ -57,3 +57,9 @@ impl From<u128> for TagValue {
         Self::Number(value as isize)
     }
 }
+
+impl From<u64> for TagValue {
+    fn from(value: u64) -> Self {
+        Self::Number(value as isize)
+    }
+}
