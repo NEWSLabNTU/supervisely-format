@@ -34,7 +34,7 @@ pub struct TagMeta {
 }
 
 impl TagMeta {
-    pub fn new_any_number(name:String) -> Self {
+    pub fn new_any_number(name: String) -> Self {
         Self {
             name,
             color: None,
