@@ -134,7 +134,7 @@ impl From<ImageAnnotation> for MediaAnnotation {
 }
 
 impl MediaKind {
-    pub fn dir_name(&self) -> &str {
+    pub fn dir_name(&self) -> &'static str {
         match self {
             MediaKind::Image => "img",
             MediaKind::Video => "video",
@@ -181,14 +181,14 @@ impl ClassicalDataset {
                 .collect();
 
             match kinds.as_slice() {
-                &[] => {
+                [] => {
                     bail!(
                         "no media folder found in dataset directory {}",
                         dir.display()
                     );
                 }
                 &[kind] => kind,
-                &[..] => {
+                [..] => {
                     let media_dirs = kinds.into_iter().map(|kind| kind.dir_name()).join(", ");
                     bail!("multiple media folders found: {media_dirs}");
                 }
