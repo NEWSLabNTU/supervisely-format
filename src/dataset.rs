@@ -1,5 +1,6 @@
-use crate::{utils::load_json, ImageAnnotation, PointCloudAnnotation, VideoAnnotation};
-use anyhow::{anyhow, bail, Context, Result};
+use crate::{
+    utils::load_json, Error, ImageAnnotation, PointCloudAnnotation, Result, VideoAnnotation,
+};
 use indexmap::IndexSet;
 use itertools::Itertools;
 use std::{
@@ -144,7 +145,7 @@ impl MediaKind {
 }
 
 impl Dataset {
-    pub fn open<P>(dir: P) -> anyhow::Result<Self>
+    pub fn open<P>(dir: P) -> Result<Self>
     where
         P: AsRef<Path>,
     {
@@ -181,42 +182,32 @@ impl ClassicalDataset {
                 .collect();
 
             match kinds.as_slice() {
-                [] => {
-                    bail!(
-                        "no media folder found in dataset directory {}",
-                        dir.display()
-                    );
-                }
+                [] => return Err(crate::Error::NoMediaFolderFound(dir.to_path_buf())),
                 &[kind] => kind,
                 [..] => {
-                    let media_dirs = kinds.into_iter().map(|kind| kind.dir_name()).join(", ");
-                    bail!("multiple media folders found: {media_dirs}");
+                    return Err(crate::Error::MultipleMediaFoldersFound(dir.to_path_buf()));
                 }
             }
         };
 
         let media_dir = dir.join(media_kind.dir_name());
 
-        let entries = fs::read_dir(&media_dir).with_context(|| {
-            format!(
-                "unable to list entries in directory {}",
-                media_dir.display()
-            )
+        let entries = fs::read_dir(&media_dir).map_err(|error| Error::ReadDirFailure {
+            path: media_dir.clone(),
+            error,
         })?;
 
         let mut media_names: IndexSet<_> = entries
             .map(|entry| -> Result<_> {
-                let entry = entry.with_context(|| {
-                    format!(
-                        "unable to list entries in directory {}",
-                        media_dir.display()
-                    )
+                let entry = entry.map_err(|error| Error::ReadDirFailure {
+                    path: media_dir.clone(),
+                    error,
                 })?;
 
                 let file_name = entry.file_name();
                 let file_name = file_name
                     .to_str()
-                    .ok_or_else(|| anyhow!("{:?} is not a valid media name", file_name))?
+                    .ok_or_else(|| Error::NonUtf8MediaName(entry.path()))?
                     .to_string();
                 Ok(file_name)
             })

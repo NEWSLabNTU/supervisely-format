@@ -1,6 +1,7 @@
 mod annotations;
 mod dataset;
 mod episode;
+mod error;
 mod objects;
 mod project;
 mod project_meta;
@@ -11,6 +12,7 @@ mod utils;
 pub use annotations::*;
 pub use dataset::*;
 pub use episode::*;
+pub use error::*;
 pub use objects::*;
 pub use project::*;
 pub use project_meta::*;

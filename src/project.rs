@@ -1,6 +1,8 @@
-use anyhow::Result;
-use crate::{utils::load_json, Dataset, ProjectMeta};
-use std::{collections::HashMap, path::{Path, PathBuf}};
+use crate::{utils::load_json, Dataset, ProjectMeta, Result};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 #[derive(Debug, Clone)]
 pub struct Project {

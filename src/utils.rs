@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::{Error, Result};
 use serde::Deserialize;
 use std::{fs::File, io::BufReader, path::Path};
 
@@ -8,7 +8,11 @@ where
     P: AsRef<Path>,
 {
     let path = path.as_ref();
-    let reader = BufReader::new(File::open(path)?);
+    let file = File::open(path).map_err(|error| Error::OpenFileFailure {
+        path: path.to_path_buf(),
+        error,
+    })?;
+    let reader = BufReader::new(file);
     let value = serde_json::from_reader(reader)?;
     Ok(value)
 }
