@@ -1,10 +1,9 @@
-use crate::tags::Tag;
-use noisy_float::types::R64;
+use crate::geometry::Geometry;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Object {
-    pub id: Option<usize>,
+    pub id: usize,
     #[serde(rename = "classId")]
     pub class_id: Option<usize>,
     #[serde(rename = "labelerLogin")]
@@ -13,74 +12,104 @@ pub struct Object {
     pub created_at: Option<String>,
     #[serde(rename = "updatedAt")]
     pub updated_at: Option<String>,
-    #[serde(flatten)]
-    pub geometry: ObjectGeometry,
+    #[serde(flatten, with = "serde_object_geometry")]
+    pub geometry: Geometry,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "geometryType")]
-pub enum ObjectGeometry {
-    #[serde(rename = "point")]
-    Point(PointGeometry),
-    #[serde(rename = "rectangle")]
-    Rectangle(RectangleGeometry),
-    #[serde(rename = "polygon")]
-    Polygon(PolygonGeometry),
-    #[serde(rename = "polyline")]
-    Polyline(PolylineGeometry),
-    #[serde(rename = "bitmap")]
-    Bitmap(BitmapGeometry),
-}
+mod serde_object_geometry {
+    use crate::{
+        BitmapGeometry, Cuboid3DGeometry, Geometry, PointGeometry, PolygonGeometry,
+        PolylineGeometry, RectangleGeometry,
+    };
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PointGeometry {
-    pub tags: Option<Vec<Tag>>,
-    #[serde(rename = "classTitle")]
-    pub class_title: String,
-    pub points: Points,
-}
+    pub fn serialize<S>(geometry: &Geometry, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let serialized: SerializedGeometryRef = match geometry {
+            Geometry::Point(point) => point.into(),
+            Geometry::Rectangle(rect) => rect.into(),
+            Geometry::Polygon(polygon) => polygon.into(),
+            Geometry::Polyline(polyline) => polyline.into(),
+            Geometry::Bitmap(bitmap) => bitmap.into(),
+            Geometry::Cuboid3D(cuboid3d) => cuboid3d.into(),
+        };
+        serialized.serialize(serializer)
+    }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RectangleGeometry {
-    pub tags: Option<Vec<Tag>>,
-    #[serde(rename = "classTitle")]
-    pub class_title: String,
-    pub points: Points,
-}
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Geometry, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let geometry = match SerializedGeometry::deserialize(deserializer)? {
+            SerializedGeometry::Point(point) => point.into(),
+            SerializedGeometry::Rectangle(rect) => rect.into(),
+            SerializedGeometry::Polygon(polygon) => polygon.into(),
+            SerializedGeometry::Polyline(polyline) => polyline.into(),
+            SerializedGeometry::Bitmap(bitmap) => bitmap.into(),
+            SerializedGeometry::Cuboid3D(cuboid3d) => cuboid3d.into(),
+        };
+        Ok(geometry)
+    }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PolygonGeometry {
-    pub tags: Option<Vec<Tag>>,
-    #[serde(rename = "classTitle")]
-    pub class_title: String,
-    pub points: Points,
-}
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(tag = "geometryType", rename_all = "camelCase")]
+    pub enum SerializedGeometry {
+        Point(PointGeometry),
+        Rectangle(RectangleGeometry),
+        Polygon(PolygonGeometry),
+        Polyline(PolylineGeometry),
+        Bitmap(BitmapGeometry),
+        #[serde(rename = "cuboid_3d")]
+        Cuboid3D(Cuboid3DGeometry),
+    }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PolylineGeometry {
-    pub tags: Option<Vec<Tag>>,
-    #[serde(rename = "classTitle")]
-    pub class_title: String,
-    pub points: Points,
-}
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+    #[serde(tag = "geometryType", content = "geometry", rename_all = "camelCase")]
+    pub enum SerializedGeometryRef<'a> {
+        Point(&'a PointGeometry),
+        Rectangle(&'a RectangleGeometry),
+        Polygon(&'a PolygonGeometry),
+        Polyline(&'a PolylineGeometry),
+        Bitmap(&'a BitmapGeometry),
+        #[serde(rename = "cuboid_3d")]
+        Cuboid3D(&'a Cuboid3DGeometry),
+    }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct BitmapGeometry {
-    pub tags: Option<Vec<Tag>>,
-    #[serde(rename = "classTitle")]
-    pub class_title: String,
-    pub bitmap: Bitmap,
-}
+    impl<'a> From<&'a Cuboid3DGeometry> for SerializedGeometryRef<'a> {
+        fn from(v: &'a Cuboid3DGeometry) -> Self {
+            Self::Cuboid3D(v)
+        }
+    }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Points {
-    pub exterior: Vec<(R64, R64)>,
-    pub interior: Vec<(R64, R64)>,
-}
+    impl<'a> From<&'a BitmapGeometry> for SerializedGeometryRef<'a> {
+        fn from(v: &'a BitmapGeometry) -> Self {
+            Self::Bitmap(v)
+        }
+    }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Bitmap {
-    #[serde(with = "serde_bytes")]
-    pub data: Vec<u8>,
-    pub origin: (R64, R64),
+    impl<'a> From<&'a PolylineGeometry> for SerializedGeometryRef<'a> {
+        fn from(v: &'a PolylineGeometry) -> Self {
+            Self::Polyline(v)
+        }
+    }
+
+    impl<'a> From<&'a PolygonGeometry> for SerializedGeometryRef<'a> {
+        fn from(v: &'a PolygonGeometry) -> Self {
+            Self::Polygon(v)
+        }
+    }
+
+    impl<'a> From<&'a RectangleGeometry> for SerializedGeometryRef<'a> {
+        fn from(v: &'a RectangleGeometry) -> Self {
+            Self::Rectangle(v)
+        }
+    }
+
+    impl<'a> From<&'a PointGeometry> for SerializedGeometryRef<'a> {
+        fn from(v: &'a PointGeometry) -> Self {
+            Self::Point(v)
+        }
+    }
 }

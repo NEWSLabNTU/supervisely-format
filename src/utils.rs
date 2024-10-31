@@ -8,11 +8,9 @@ where
     P: AsRef<Path>,
 {
     let path = path.as_ref();
-    let file = File::open(path).map_err(|error| Error::OpenFileFailure {
-        path: path.to_path_buf(),
-        error,
-    })?;
+    let file = File::open(path).map_err(|error| Error::open_file_error(path, error))?;
     let reader = BufReader::new(file);
-    let value = serde_json::from_reader(reader)?;
+    let value = serde_json::from_reader(reader)
+        .map_err(|error| Error::parse_json_file_error(path, error))?;
     Ok(value)
 }

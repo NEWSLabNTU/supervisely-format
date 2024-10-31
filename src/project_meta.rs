@@ -1,6 +1,8 @@
 use serde::{de::Error as _, Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::{HashMap, HashSet};
 
+use crate::Shape;
+
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct KeyIdMap {
     pub tags: HashMap<String, usize>,
@@ -15,7 +17,7 @@ pub struct ProjectMeta {
     pub tags: Vec<TagMeta>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClassMeta {
     pub title: String,
     pub shape: Shape,
@@ -50,23 +52,6 @@ impl TagMeta {
             values: None,
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
-pub enum Shape {
-    #[serde(rename = "rectangle")]
-    Rectangle,
-    #[serde(rename = "line")]
-    Line,
-    #[serde(rename = "polygon")]
-    Polygon,
-    #[serde(rename = "point")]
-    Point,
-    #[serde(rename = "bitmap")]
-    Bitmap,
-    #[serde(rename = "cuboid_3d")]
-    #[default]
-    Cuboid3D,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
