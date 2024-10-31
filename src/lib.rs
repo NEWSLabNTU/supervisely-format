@@ -19,3 +19,4 @@ pub use objects::*;
 pub use project::*;
 pub use project_meta::*;
 pub use related_images::*;
+pub use tags::*;

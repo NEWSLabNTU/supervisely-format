@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 /// The image annotation data.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ImageAnnotation {
-    pub name: Option<String>,
+    pub name: String,
     pub description: Option<String>,
     pub size: Size,
     pub tags: Option<Vec<Tag>>,
